@@ -3,6 +3,33 @@ This is a command-line downloader written using Python. This project is inspired
 
 **Disclaimer**: You should not use this software to abuse EDX website. I have written this software with a positive intention, that is to help learners download EDX course videos altogether quickly and easily. I am not responsible if your EDX account gets banned for abuse. You should use this software on your own risks.
 
+## Note: MH modifications
+
+original repo https://github.com/rehmatworks/edx-downloader.git
+
+Failed with Expecting value: line 2 column 1 (char 1)
+
+As per [issue #10](https://github.com/rehmatworks/edx-downloader/issues/10) I downloaded patched version from https://github.com/owaiss007/edx-downloader
+
+It worked!
+
+As per [issue #20](https://github.com/rehmatworks/edx-downloader/issues/20) I made the changes proposed by asuragan to download also subtitles
+
+First I noticed `$ edxdl` was not running the copy modified by me in the local folder (I must have done something wrong perhaps because of pip install then uninstall).
+
+Made a couple of changes to run locally using `$ python3 utils.py` from local folder (search for MH in lib.py and utils.py)
+
+Once I got it to run I had to tweak the changes because it did not work. Finally it prints out a download link for the STRs and downloads the video. Not perfect but did the trick
+
+### To do
+
+- [ ] save local bkp 
+- [ ] fix that `edxdl` elegantly runs the modified version  (e.g. do a clean manual installation then modify manually? Need first to  understand how the `__init_` and `__main__` files work)
+- [ ] download automatically STR files and save them with the same name as the corresponding video 
+- [ ] welcome video not downloaded. I suspect because it is not mp4
+
+ 
+
 ## Installation
 ```bash
 pip3 install edx-downloader

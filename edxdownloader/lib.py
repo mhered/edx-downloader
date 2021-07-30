@@ -30,6 +30,8 @@ ci_colors = {
 cf.update_palette(ci_colors)
 
 # Is raised when login attempt fails
+
+
 class EdxLoginError(Exception):
     def __init__(self, value):
         self.value = value
@@ -38,6 +40,8 @@ class EdxLoginError(Exception):
         return repr(self.value)
 
 # Is raised when the course cannot be fetched
+
+
 class EdxInvalidCourseError(Exception):
     def __init__(self, value):
         self.value = value
@@ -46,6 +50,8 @@ class EdxInvalidCourseError(Exception):
         return repr(self.value)
 
 # Raised when no blocks found for the course
+
+
 class EdxNotEnrolledError(Exception):
     def __init__(self, value):
         self.value = value
@@ -54,6 +60,8 @@ class EdxNotEnrolledError(Exception):
         return repr(self.value)
 
 # Raised when some HTTP error occurs
+
+
 class EdxRequestError(Exception):
     def __init__(self, value):
         self.value = value
@@ -62,6 +70,8 @@ class EdxRequestError(Exception):
         return repr(self.value)
 
 # Raised when an unauthenticated request is made
+
+
 class EdxNotAuthenticatedError(Exception):
     def __init__(self, value):
         self.value = value
@@ -153,24 +163,25 @@ class EdxDownloader:
     def get_course_data(self, course_url):
         # Gets the course media URLs. The media URLs are returned
         # as a list if found.
-
+        print("Running local get_course_data edited by MH...")
         # Break down the course URL to get course slug.
         url_parts = course_url.split('/')
         if len(url_parts) >= 4 and str(url_parts[4]).startswith('course-'):
-           COURSE_SLUG = str(url_parts[4])
+            COURSE_SLUG = str(url_parts[4])
         else:
             # If the conditions above are not passed, we will assume that a wrong
             # course URL was passed in.
             raise EdxInvalidCourseError('The provided course URL seems to be invalid.')
-        
+
         # Construct the course outline URL
         COURSE_OUTLINE_URL = '{}/{}'.format(COURSE_OUTLINE_BASE_URL, COURSE_SLUG)
 
         # Check either authenticated or not before proceeding.
         # If not, raise the EdxNotAuthenticatedError exception.
         if not self.is_authenticated:
-            raise EdxNotAuthenticatedError('Course data cannot be retrieved without getting authenticated.')
-        
+            raise EdxNotAuthenticatedError(
+                'Course data cannot be retrieved without getting authenticated.')
+
         # Make an HTTP GET request to outline URL and get tabs
         outline_resp = self.client.get(COURSE_OUTLINE_URL)
         blocks = outline_resp.json().get('course_blocks')
@@ -192,7 +203,7 @@ class EdxDownloader:
                         collected_courses.append(course_name)
                     else:
                         continue
-                
+
                 if course_name is not None:
                     block_id = v.get('id')
                     block_url = '{}/{}/jump_to/{}'.format(COURSE_BASE_URL, COURSE_SLUG, block_id)
@@ -212,18 +223,35 @@ class EdxDownloader:
                                 # Get the data-metadata attribute HTML
                                 # and parse it as a JSON object.
                                 metadata = json.loads(metadata)
+
+                                # MH added this block to print out URL of subtitles
+                                if 'publishCompletionUrl' in metadata:
+                                    tr_url = metadata['publishCompletionUrl']
+                                    segments = tr_url.rpartition('/')
+                                    srt_url = 'https://courses.edx.org{}/transcript/download'.format(
+                                        segments[0])
+                                    # MH: if a valid transcript URL is found
+                                    # print it out
+                                    print("Found SRT: ", srt_url)
+                                    # and break the loop
+                                    # break
+
+                                # MH uncomment next block to recover video downloads instead of SRTs
                                 if 'sources' in metadata:
                                     for vidsource in list(metadata['sources']):
                                         if str(vidsource).endswith('.mp4'):
                                             vid_url = vidsource
                                             # Break the loop if a valid video URL
                                             # is found.
+                                            print("MH: Found a video!")
                                             break
+
                                 if vid_url and vid_url not in collected_vids:
                                     vid_title = v.get('display_name')
                                     vid_heading_el = vid.find('h3', {'class': 'hd hd-2'})
                                     if vid_heading_el:
-                                        vid_title = '{} - {}'.format(vid_title, vid_heading_el.text.strip())
+                                        vid_title = '{} - {}'.format(vid_title,
+                                                                     vid_heading_el.text.strip())
 
                                     # Append the video object to all_videos list
                                     all_videos.append({
@@ -231,13 +259,25 @@ class EdxDownloader:
                                         'url': vid_url,
                                         'course': course_name
                                     })
-                                    collected_vids.append(vid_url)                
+                                    collected_vids.append(vid_url)
         return all_videos
-    
+
     def download_video(self, vid_url, save_as):
         # Download the video
+
+        # added supposedly to download subtitles (but it doesn't work)
+        """
+        r = requests.get(vid_url)
+        srt = r.text
+        with open(save_as, 'w') as f:
+            for i in srt:
+                f.write("{}".format(i))
+        return True
+        """
+
+        # MH next paragraph to download videos
         with self.client.get(vid_url, stream=True) as resp:
-            total_size_in_bytes= int(resp.headers.get('content-length', 0))
+            total_size_in_bytes = int(resp.headers.get('content-length', 0))
             progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
             with open(save_as, 'wb') as f:
                 for chunk in resp.iter_content(chunk_size=VID_CHUNK_SIZE):

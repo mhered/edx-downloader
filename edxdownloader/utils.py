@@ -1,4 +1,8 @@
-from edxdownloader.lib import EdxDownloader, EdxLoginError, EdxInvalidCourseError, EdxNotEnrolledError
+# removed by MH to run local version of lib.py
+# from edxdownloader.lib import EdxDownloader, EdxLoginError, EdxInvalidCourseError, EdxNotEnrolledError
+# added by MH to run local version of lib.py
+from lib import EdxDownloader, EdxLoginError, EdxInvalidCourseError, EdxNotEnrolledError
+
 import validators
 from os.path import expanduser
 import os
@@ -8,6 +12,9 @@ from slugify import slugify
 
 
 def main():
+    # MH print added to show it's running local
+    print("Running local utils.py edited by MH...")
+
     try:
         course_url = None
         email = None
@@ -23,8 +30,9 @@ def main():
         confirm_auth_use = ''
         if os.path.exists(auth_file):
             while confirm_auth_use not in ['y', 'n']:
-                confirm_auth_use = str(input('Do you want to use configured EDX account? [y/n]: ')).strip().lower()
-            
+                confirm_auth_use = str(
+                    input('Do you want to use configured EDX account? [y/n]: ')).strip().lower()
+
             if confirm_auth_use == 'y':
                 with open(auth_file) as f:
                     content = f.read().splitlines()
@@ -44,13 +52,14 @@ def main():
 
         while password is None:
             password = str(getpass())
-        
+
         dont_ask_again = os.path.join(expanduser('~'), '.edxdontask')
         if confirm_auth_use != 'y' and not os.path.exists(dont_ask_again):
             save_ask_answer = ''
             while save_ask_answer not in ['y', 'n', 'never']:
-                save_ask_answer = str(input('Do you want to save this login info? Choose n if it is a shared computer. [y/n/never]: ')).strip().lower()
-        
+                save_ask_answer = str(input(
+                    'Do you want to save this login info? Choose n if it is a shared computer. [y/n/never]: ')).strip().lower()
+
             if save_ask_answer == 'y':
                 with open(auth_file, 'w') as f:
                     f.write(email + '\n')
@@ -63,7 +72,8 @@ def main():
 
         if not edx.is_authenticated:
             passhint = '*' * len(password)
-            edx.log_message('Attempting to sign in using {} and {}'.format(email, passhint), 'orange')
+            edx.log_message('Attempting to sign in using {} and {}'.format(
+                email, passhint), 'orange')
             try:
                 edx.sign_in()
                 edx.log_message('Authentication successful!', 'green')
@@ -76,7 +86,8 @@ def main():
         count = 0
 
         if type(videos) is list and len(videos) > 0:
-            edx.log_message('Crawling complete! Found {} videos. Downloading videos now.'.format(len(videos)), 'green')
+            edx.log_message(
+                'Crawling complete! Found {} videos. Downloading videos now.'.format(len(videos)), 'green')
             for vid in videos:
                 vid_title = vid.get('title')
                 course_name = vid.get('course')
@@ -84,10 +95,11 @@ def main():
                 if course_url and vid_title:
                     save_main_dir = os.path.join(os.getcwd(), slugify(course_name))
                     countstr = str(count)
-                    save_as = os.path.join(save_main_dir, countstr+'{}.mp4'.format(slugify(vid_title)))
+                    save_as = os.path.join(save_main_dir, countstr +
+                                           '{}.mp4'.format(slugify(vid_title)))
                     if not os.path.exists(save_main_dir):
                         os.makedirs(save_main_dir)
-                    
+
                     if os.path.exists(save_as):
                         edx.log_message('Already downloaded. Skipping {}'.format(save_as))
                     else:
@@ -114,3 +126,9 @@ def main():
             f.write((str(e)))
         print('Something unexpected occured. Please provide details present in edx-error.log file while opening an issue at GitHub.')
         sys.exit(1)
+
+
+# added by MH to  be able to run local  copy using
+# $ python3 utils.py
+
+main()
