@@ -23,7 +23,7 @@ Once I got it to run I had to tweak the changes because it did not work. Finally
 
 ### To do
 
-- [ ] save local bkp 
+- [x] save local bkp (as sandbox branch)
 - [ ] fix that `edxdl` elegantly runs the modified version  (e.g. do a clean manual installation then modify manually? Need first to  understand how the `__init_` and `__main__` files work)
 - [ ] download automatically STR files and save them with the same name as the corresponding video 
 - [ ] welcome video not downloaded. I suspect because it is not mp4
